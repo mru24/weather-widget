@@ -34,7 +34,7 @@
         <div class="top bg-success text-light rounded-top">
           <div class="row p-2">
             <div class="col text-left">
-              <h4>Location</h4>
+              <h4>{{ results.name }}</h4>
             </div>
             <div class="col text-right">
               <h5>Time</h5>
@@ -44,21 +44,44 @@
             </div>
           </div>
         </div>
-        <div class="content" :class="[ night ? 'bg-dark text-light' : 'bg-light text-dark']">
+        <div class="content text-center" :class="[ night ? 'bg-dark text-light' : 'bg-light text-dark']">
           <div class="row p-2">
             <div class="col">
-
+              <div class="row">
+                <div class="col">
+                  <h1 class="display-5">{{ results.main.temp }}</h1>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <p><small>min: </small>{{ results.main.temp_min }}</p>
+                </div>
+                <div class="col-6">
+                  <p><small>max: </small>{{ results.main.temp_max }}</p>
+                </div>
+              </div>
             </div>
             <div class="col">
 
             </div>
           </div>
-          <div class="row p-2">
+          <div class="row p-2 text-capitalize" v-for="(weather, index) in results.weather" :key="index">
             <div class="col">
-
-            </div>
-            <div class="col">
-
+              <div class="row">
+                <div class="col">
+                  <h4 >{{ weather.main }}</h4>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <img :src="'http://openweathermap.org/img/w/' + weather.icon + '.png'" alt="" width="90">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <p>{{ weather.description }}</p>
+                </div>
+              </div>
             </div>
           </div>
           <div class="row p-2">
@@ -86,7 +109,7 @@ export default {
       results: '',
       units: 'metric',
       location: '',
-      night: true
+      night: false
     }
   },
   methods: {
@@ -111,6 +134,9 @@ export default {
   .footer
 .close
   cursor: pointer
+
+.descr
+  text-transform: capitalize
 
 .v-enter-active, .v-leave-active
   transition: .5s
