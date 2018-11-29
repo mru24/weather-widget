@@ -1,5 +1,5 @@
 <template>
-  <div class="weatherApp rounded m-5">
+  <div class="weatherApp rounded">
     <!-- <transition> -->
       <div class="location border rounded p-3 bg-light" v-if="!currentWeather">
         <h2 class="text-center my-2">Weather Widget</h2>
@@ -190,8 +190,10 @@ export default {
         })
     },
     getDate () {
-      var time = new Date()
-      this.date = time.toString().slice(16, 24)
+      setInterval(function () {
+        var time = new Date()
+        this.date = time.toString().slice(16, 24)
+      })
     }
   },
   filters: {
@@ -210,7 +212,11 @@ export default {
 .content
 
 .weatherApp
-  width: 300px
+  width: 340px
+  margin: 30px
+  @media only screen and (max-width: 400px)
+    width: auto
+    margin: 5px
   .top
   .footer
 .close
