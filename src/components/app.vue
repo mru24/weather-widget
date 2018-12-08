@@ -1,198 +1,158 @@
 <template>
-  <div class="weatherApp rounded">
-    <!-- <transition name="searchBox"> -->
-      <div class="container" v-if="!currentWeather">
-        <div class="location border rounded p-3 bg-light">
-          <h2 class="text-center my-2">Weather Widget</h2>
-          <form @submit.prevent="getResults(query, units), getForecast(query, units)">
-            <div class="form-group my-3">
-              <input type="text" class="form-control" v-model="query" placeholder="Location">
+  <div class="weatherApp">
+    <div class="row location" v-if="!currentWeather">
+      <div class="col border bg-light p-3 rounded shadow">
+        <h2 class="text-center my-2">Weather Widget</h2>
+        <form @submit.prevent="getWeather(query, units), getForecast(query, units)">
+          <div class="form-group my-3">
+            <input type="text" class="form-control" v-model="query" placeholder="Location">
+          </div>
+          Units:
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="exampleRadios" id="Radio1" v-model="units" value="metric" checked>
+            <label class="form-check-label" for="Radio1">
+              Metric
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="exampleRadios" id="Radio2" v-model="units" value="imperial">
+            <label class="form-check-label" for="Radio2">
+              Imperial
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="exampleRadios" id="Radio3" v-model="units" value="">
+            <label class="form-check-label" for="Radio3">
+              Kelvin
+            </label>
+          </div>
+          <div class="row">
+            <div class="col text-center">
+              <button type="submit" class="btn btn-success my-4">Get weather</button>
             </div>
-            Units:
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="exampleRadios" id="Radio1" v-model="units" value="metric" checked>
-              <label class="form-check-label" for="Radio1">
-                Metric
-              </label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="exampleRadios" id="Radio2" v-model="units" value="imperial">
-              <label class="form-check-label" for="Radio2">
-                Imperial
-              </label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="exampleRadios" id="Radio3" v-model="units" value="">
-              <label class="form-check-label" for="Radio3">
-                Kelvin
-              </label>
-            </div>
-            <div class="row">
-              <div class="col text-center">
-                <button type="submit" class="btn btn-success my-4">Get weather</button>
-              </div>
-            </div>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
-    <!-- </transition>
+    </div>
 
-    <transition name="searchBox"> -->
-      <div class="container" v-if="currentWeather">
-        <div class="viewWeather">
-          <div class="top bg-success text-light rounded-top">
-            <div class="row p-2">
+    <div class="row viewWeather" v-if="currentWeather">
+      <div class="col shadow">
+        <div class="row bg-success text-light rounded-top p-2">
+          <div class="col">
+            <div class="row">
               <div class="col text-left">
                 <h4>{{ location }}</h4>
               </div>
-              <div class="col text-right close" @click="currentWeather=false">
+              <div class="col text-right link" @click="currentWeather=false">
                 <h5 class="text-white">Close</h5>
               </div>
             </div>
             <div class="row">
-              <div class="col text-left mx-2">
-                <p>{{ currentTime }}</p>
+              <div class="col">
+                <p class="lead">{{ currentDay }} {{ currentDate }}</p>
+              </div>
+              <div class="col">
+                <p class="lead text-right">{{ currentTime }}</p>
               </div>
             </div>
-          </div>
-          <div class="content text-center" :class="[ night ? 'bg-dark text-light' : 'bg-light text-dark']">
-            <div class="row p-2">
+            <div class="row">
               <div class="col">
-                <div class="row">
-                  <div class="col">
-                    <h1 class="display-5">{{ currentTemp | temperature }} &#8451;</h1>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col">
-                    <p><small>min: </small>{{ minTemp | temperature }}</p>
-                  </div>
-                  <div class="col">
-                    <p><small>max: </small>{{ maxTemp | temperature }}</p>
-                  </div>
-                </div>
-              </div>
-              <div class="col">
-                <div class="row">
-                  <div class="col">
-                    <img src="../assets/sunrise.png" alt="" width="30">
-                    {{ sunrise }}
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col">
-                    <img src="../assets/sunset.jpg" alt="" width="30">
-                    {{ sunset }}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="row p-2 text-capitalize">
-              <div class="col">
-                <div class="row">
-                  <div class="col">
-                    <h6>{{ overcast }}</h6>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col">
-                    <img :src="icon" alt="" width="70">
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col">
-
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="row p-2">
-              <div class="col">
-                Wind: {{ wind }}
-              </div>
-              <div class="col">
-                Pressure: {{ pressure }}
-              </div>
-              <div class="col">
-                Humidity: {{ humidity }}
-              </div>
-            </div>
-          </div>
-          <!-- <div class="footer bg-info text-light rounded-bottom p-2">
-            <h4 class="text-right">Footer</h4>
-          </div> -->
-          <div class="accordion" id="forecastAccordion">
-            <div class="card">
-              <div class="card-header" id="headingOne">
-                <h5 class="mb-0">
-                  <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                    5 days forecast
-                  </button>
-                </h5>
-              </div>
-
-              <div id="collapseOne" class="collapse hide" aria-labelledby="headingOne" data-parent="#forecastAccordion">
-                <div class="card" v-for="(forecast, index) in Forecast" :key="index">
-                  <div class="card-header">
-                    {{ forecast.dt | time }}
-                  </div>
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col text-center align-middle">
-                        <small>Temperature</small><br>
-                        <h3 class="">{{ forecast.main.temp | temperature }} &#8451;</h3>
-                      </div>
-                      <div class="col text-left">
-                        <div class="row">
-                          <div class="col">
-                            <small>max: </small>{{ forecast.main.temp_max | temperature }}
-                          </div>
-                        </div>
-                        <div class="row">
-                          <div class="col">
-                            <small>min: </small>{{ forecast.main.temp_min | temperature }}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row p-2 text-capitalize text-center">
-                      <div class="col">
-                        <div class="row">
-                          <div class="col">
-                            <h6>{{ forecast.weather[0].description }}</h6>
-                          </div>
-                        </div>
-                        <div class="row">
-                          <div class="col">
-                            <img :src="'http://openweathermap.org/img/w/' + forecast.weather[0].icon + '.png'" alt="" width="40">
-                          </div>
-                        </div>
-                        <div class="row">
-                          <div class="col">
-
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row p-2">
-                      <div class="col">
-                        Wind: {{ forecast.wind.speed }} m/s
-                      </div>
-                      <div class="col">
-                        Pressure: {{ forecast.main.pressure }} kPa
-                      </div>
-                      <div class="col">
-                        Humidity: {{ forecast.main.humidity }} %
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <h4 class="lead text-right link" @click="forecastWeather=!forecastWeather">5 day forecast</h4>
               </div>
             </div>
           </div>
         </div>
+        <!-- CONTENT DIV -->
+        <transition mode="out-in">
+          <div class="row p-2" :class="[ night ? 'bg-dark text-light' : 'bg-light text-dark']" v-if="!forecastWeather">
+            <div class="col">
+              <div class="row mb-4">
+                <div class="col-8">
+                  <h1 class="display-3 text-center">{{ currentTemp | fixed }} &#8451;</h1>
+                </div>
+                <div class="col-4">
+                  <div class="row">
+                    <div class="col">
+                      <p><small>min: </small>{{ minTemp | fixed }} &#8451;</p>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      <p><small>max: </small>{{ maxTemp | fixed }} &#8451;</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row p-2 text-capitalize text-center">
+                <div class="col">
+                  <div class="row">
+                    <div class="col">
+                      <h6 class="lead">{{ overcast }}</h6>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col m-3">
+                      <img :src="icon" alt="" width="110">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row p-2 text-center">
+                <div class="col">
+                  <p>Wind:</p>
+                  <p>{{ wind | fixed }} m/s</p>
+                </div>
+                <div class="col">
+                  <p>Pressure:</p>
+                  <p>{{ pressure | fixed }} hPa</p>
+                </div>
+                <div class="col">
+                  <p>Humidity:</p>
+                  <p>{{ humidity | fixed }} %</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
+        <!-- FORECAST -->
+        <transition>
+          <div class="row" :class="[ night ? 'bg-dark text-light' : 'bg-light text-dark']" v-if="forecastWeather">
+            <div class="col">
+              <div class="row" v-for="(item, index) in Forecast" :key="index">
+                <div class="col">
+                  <div class="row p-1">
+                    <p class="text-center">{{ item.dt_txt.slice(0, 10) }}</p>
+                  </div>
+                  <div class="row p-1 border-bottom">
+                    <div class="col">
+                      <div class="row">
+                        <span class="align-center">
+                          <img :src="'http://openweathermap.org/img/w/' + item.weather[0].icon + '.png'" alt="" width="40">
+                          <span class="text-capitalize">{{ item.weather[0].description }}</span>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="row">
+                        <span class="align-center">
+                          <p>{{ item.main.temp_min | fixed }} &#8451; to {{ item.main.temp_max | fixed }} &#8451;</p>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
+
+        <!-- <div class="row bg-success text-light rounded-bottom p-2">
+          <div class="col">
+            <h4 class="lead text-right" @click="forecastWeather=!forecastWeather">5 day forecast</h4>
+          </div>
+        </div> -->
       </div>
-    <!-- </transition> -->
+    </div>
   </div>
 </template>
 
@@ -203,6 +163,8 @@ export default {
     return {
       query: '',
       units: 'metric',
+      currentDay: '',
+      currentDate: '',
       currentTime: '',
       currentWeather: false,
       location: '',
@@ -217,28 +179,14 @@ export default {
       time: '',
       sunrise: '',
       sunset: '',
-      forecast: '',
       date: '',
       forecastWeather: false,
-      Forecast: '',
-      F_Temp: '',
-      F_minTemp: '',
-      F_maxTemp: '',
-      F_pressure: '',
-      F_humidity: '',
-      F_wind: '',
-      F_overcast: '',
-      F_icon: '',
-      F_time: '',
-      F_sunrise: '',
-      F_sunset: '',
-      F_forecast: '',
-      F_date: '',
-      night: false
+      Forecast: [],
+      night: ''
     }
   },
   methods: {
-    getResults (query, units) {
+    getWeather (query, units) {
       axios.get('https://api.openweathermap.org/data/2.5/weather?q=' + query + '&units=' + units + '&APPID=055f1d666fd988c72b7af102a40c00a8')
         .then(response => {
           console.log(response.data)
@@ -248,8 +196,8 @@ export default {
           this.minTemp = response.data.main.temp_min
           this.maxTemp = response.data.main.temp_max
           this.pressure = response.data.main.pressure
-          this.humidity = response.data.main.humidity + '%'
-          this.wind = response.data.wind.speed + 'm/s'
+          this.humidity = response.data.main.humidity
+          this.wind = response.data.wind.speed
           this.overcast = response.data.weather[0].description
           this.icon = 'http://openweathermap.org/img/w/' + response.data.weather[0].icon + '.png'
           this.time = new Date(response.data.dt * 1000).toLocaleTimeString('en-GB').slice(0, 5)
@@ -258,34 +206,49 @@ export default {
         })
     },
     getForecast (query, units) {
+      this.Forecast = []
       axios.get('https://api.openweathermap.org/data/2.5/forecast?q=' + query + '&units=' + units + '&APPID=055f1d666fd988c72b7af102a40c00a8')
         .then(response => {
           console.log(response.data.list)
-          this.Forecast = response.data.list
-          this.forecastWeather = true
+          for (let i = 0; i < response.data.list.length; i += 8) {
+            this.Forecast.push(response.data.list[i])
+          }
         })
     },
-    getDate () {
+    getDay () {
       let d = new Date()
       var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
       let day = days[d.getDay()]
+      return day
+    },
+    getDate () {
+      let d = new Date()
       let D = d.getDate()
       let M = 1 + d.getMonth()
       let Y = d.getFullYear()
+      return D + '/' + M + '/' + Y
+    },
+    getTime () {
+      let d = new Date()
       let h = d.getHours()
+      if (h > 6 && h < 19) {
+        this.night = false
+      } else {
+        this.night = true
+      }
       let m = d.getMinutes()
-      if (m > 0 && m < 9) {
+      if (m >= 0 && m <= 9) {
         m = 0 + '' + m
       }
       let s = d.getSeconds()
-      if (s > 0 && s < 9) {
+      if (s >= 0 && s <= 9) {
         s = 0 + '' + s
       }
-      return day + '  ' + D + '/' + M + '/' + Y + '  ' + h + ':' + m + ':' + s
+      return h + ':' + m
     }
   },
   filters: {
-    temperature: (value) => {
+    fixed: (value) => {
       return `${value.toFixed(0)}`
     },
     time: function (value) {
@@ -294,9 +257,11 @@ export default {
       }
     }
   },
-  mounted: function () {
+  mounted () {
     setInterval(() => {
-      this.currentTime = this.getDate()
+      this.currentDay = this.getDay()
+      this.currentDate = this.getDate()
+      this.currentTime = this.getTime()
     }, 1000)
   }
 }
@@ -311,33 +276,24 @@ li
   list-style: none
 
 .weatherApp
-  width: 340px
+  width: 360px
   height: auto
   margin: 30px
   @media only screen and (max-width: 400px)
     width: auto
     margin: 5px
-  .top
-  .footer
-.close
+
+.link
   cursor: pointer
-.descr
-  text-transform: capitalize
-// .searchBox-leave-active
-//   transition: .5s
-// .searchBox-enter-active
-//   transition: .5s
-//   transition-delay: .5s
-// .searchBox-leave-to
-//   transform: scale3D(0, .6, .3)
-// .searchBox-enter
-//   transform: scale3D(0, .6, .3)
-//
-// .resultBox-enter-active, .resultBox-leave-active
-//   transition: .5s
-// .resultBox-leave-to
-//   transform: translateX(-100%)
-// .resultBox-enter
-//   transform: translateX(100%)
+
+.v-enter-active, .v-leave-active
+  position: fixed
+  width: 390px
+  height: inherit
+  transform-origin: top
+  transition: all 1s
+.v-enter, .v-leave-to
+  transform: scale3d(1,0,1)
+  opacity: 0
 
 </style>
