@@ -5,9 +5,12 @@
         <h2 class="text-center my-2">Weather Widget</h2>
         <form @submit.prevent="getWeather(query, units), getForecast(query, units)">
           <div class="form-group my-3">
-            <input type="text" class="form-control" v-model="query" placeholder="Location">
+            <div class="locDiv">
+              <input type="text" class="form-control locInput" v-model="query" placeholder="Location">
+              <button class="locButton" @click.prevent="geoLocation">Loc</button>
+            </div>
           </div>
-          Units:
+          <!-- Units:
           <div class="form-check">
             <input class="form-check-input" type="radio" name="exampleRadios" id="Radio1" v-model="units" value="metric" checked>
             <label class="form-check-label" for="Radio1">
@@ -25,7 +28,7 @@
             <label class="form-check-label" for="Radio3">
               Kelvin
             </label>
-          </div>
+          </div> -->
           <div class="row">
             <div class="col text-center">
               <button type="submit" class="btn btn-success my-4">Get weather</button>
@@ -121,22 +124,43 @@
               <div class="row" v-for="(item, index) in Forecast" :key="index">
                 <div class="col">
                   <div class="row p-1">
-                    <p class="text-center">{{ item.dt_txt.slice(0, 10) }}</p>
+                    <span class="text-center">{{ item.dt_txt.slice(0, 10) }}</span>
                   </div>
                   <div class="row p-1 border-bottom">
-                    <div class="col">
+                    <div class="col text-center">
                       <div class="row">
-                        <span class="align-center">
-                          <img :src="'http://openweathermap.org/img/w/' + item.weather[0].icon + '.png'" alt="" width="40">
-                          <span class="text-capitalize">{{ item.weather[0].description }}</span>
-                        </span>
+                        <div class="col">
+                          <div class="row">
+                            <img class="d-block mx-auto" :src="'http://openweathermap.org/img/w/' + item.weather[0].icon + '.png'" alt="" width="40">
+                          </div>
+                          <div class="row">
+                            <small class="text-center w-100">
+                              <span class="text-capitalize">{{ item.weather[0].description }}</span>
+                            </small>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div class="col">
                       <div class="row">
                         <span class="align-center">
-                          <p>{{ item.main.temp_min | fixed }} &#8451; to {{ item.main.temp_max | fixed }} &#8451;</p>
+                          <p class="lead">{{ item.main.temp_min | fixed }} &#8451; / {{ item.main.temp_max | fixed }} &#8451;</p>
                         </span>
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="row">
+                        <div class="col">
+                          <div class="row">
+                            Wind: {{ item.wind.speed | fixed }} m/s
+                          </div>
+                          <div class="row">
+                            Press: {{ item.main.pressure | fixed }} hPa
+                          </div>
+                          <div class="row">
+                            Humid: {{ item.main.humidity | fixed }} %
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -205,9 +229,42 @@ export default {
           this.sunset = new Date(response.data.sys.sunset * 1000).toLocaleTimeString('en-GB').slice(0, 5)
         })
     },
+    getWeatherByLoc (position, units) {
+      let lat = position.coords.latitude
+      let lon = position.coords.longitude
+      axios.get('https://api.openweathermap.org/data/2.5/weather?lat=' + lat + '&lon=' + lon + '&units=' + units + '&APPID=055f1d666fd988c72b7af102a40c00a8')
+        .then(response => {
+          console.log(response.data)
+          this.currentWeather = true
+          this.location = response.data.name
+          this.currentTemp = response.data.main.temp
+          this.minTemp = response.data.main.temp_min
+          this.maxTemp = response.data.main.temp_max
+          this.pressure = response.data.main.pressure
+          this.humidity = response.data.main.humidity
+          this.wind = response.data.wind.speed
+          this.overcast = response.data.weather[0].description
+          this.icon = 'http://openweathermap.org/img/w/' + response.data.weather[0].icon + '.png'
+          this.time = new Date(response.data.dt * 1000).toLocaleTimeString('en-GB').slice(0, 5)
+          this.sunrise = new Date(response.data.sys.sunrise * 1000).toLocaleTimeString('en-GB').slice(0, 5)
+          this.sunset = new Date(response.data.sys.sunset * 1000).toLocaleTimeString('en-GB').slice(0, 5)
+        })
+    },
     getForecast (query, units) {
       this.Forecast = []
       axios.get('https://api.openweathermap.org/data/2.5/forecast?q=' + query + '&units=' + units + '&APPID=055f1d666fd988c72b7af102a40c00a8')
+        .then(response => {
+          console.log(response.data.list)
+          for (let i = 0; i < response.data.list.length; i += 8) {
+            this.Forecast.push(response.data.list[i])
+          }
+        })
+    },
+    getForecastByLoc (position, units) {
+      let lat = position.coords.latitude
+      let lon = position.coords.longitude
+      this.Forecast = []
+      axios.get('https://api.openweathermap.org/data/2.5/forecast?lat=' + lat + '&lon=' + lon + '&units=' + units + '&APPID=055f1d666fd988c72b7af102a40c00a8')
         .then(response => {
           console.log(response.data.list)
           for (let i = 0; i < response.data.list.length; i += 8) {
@@ -245,6 +302,19 @@ export default {
         s = 0 + '' + s
       }
       return h + ':' + m
+    },
+    geoLocation () {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log(position)
+            this.getWeatherByLoc(position, this.units)
+            this.getForecastByLoc(position, this.units)
+          }, (error) => {
+            console.log(error)
+          }
+        )
+      }
     }
   },
   filters: {
@@ -269,9 +339,6 @@ export default {
 
 <style lang="sass">
 
-.container
-  // position: fixed
-  // width: inherit
 li
   list-style: none
 
@@ -279,12 +346,19 @@ li
   width: 360px
   height: auto
   margin: 30px
-  @media only screen and (max-width: 400px)
-    width: auto
-    margin: 5px
-
+  @media only screen and (max-width: 600px)
+    width: 92%
+    margin: 2px 4%
 .link
   cursor: pointer
+
+.locDiv
+  position: relative
+  .locButton
+    position: absolute
+    top: 0
+    right: 0
+    height: 100%
 
 .v-enter-active, .v-leave-active
   position: fixed
