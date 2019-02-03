@@ -2,12 +2,14 @@
   <div class="weatherApp">
     <div class="row location" v-if="!currentWeather">
       <div class="col border bg-light p-3 rounded shadow">
-        <h2 class="text-center my-2">Weather Widget</h2>
+        <h3 class="text-center my-3">Weather Widget</h3>
         <form @submit.prevent="getWeather(query, units), getForecast(query, units)">
-          <div class="form-group my-3">
+          <div class="form-group my-4">
             <div class="locDiv">
               <input type="text" class="form-control locInput" v-model="query" placeholder="Location">
-              <button class="locButton" @click.prevent="geoLocation">Loc</button>
+              <button class="locButton link" @click.prevent="geoLocation">
+                <img src="static/location.png" alt="" height="30">
+              </button>
             </div>
           </div>
           <!-- Units:
@@ -60,7 +62,14 @@
             </div>
             <div class="row">
               <div class="col">
-                <h4 class="lead text-right link" @click="forecastWeather=!forecastWeather">5 day forecast</h4>
+                <h4 class="lead text-right link" @click="forecastWeather=!forecastWeather">
+                  <span v-if="!forecastWeather">
+                    5 day forecast
+                  </span>
+                  <span v-else>
+                    Today
+                  </span>
+                </h4>
               </div>
             </div>
           </div>
@@ -351,6 +360,8 @@ li
     margin: 2px 4%
 .link
   cursor: pointer
+  &:hover
+    text-decoration: underline
 
 .locDiv
   position: relative
